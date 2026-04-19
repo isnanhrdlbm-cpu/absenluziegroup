@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Attendance Dashboard - Payroll Period</title>
+    <title>Luzie Group Attendance Dashboard - Payroll Period</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -157,34 +157,34 @@
         .chart-card h3 { font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 16px; }
         .chart-container { position: relative; height: 300px; }
         
-        .full-work-section {
+        .perfect-section {
             background: var(--card); padding: 24px; border-radius: 12px;
             box-shadow: var(--shadow); margin-bottom: 24px;
         }
-        .full-work-section h3 { 
+        .perfect-section h3 { 
             font-size: 14px; font-weight: 700; color: var(--text-secondary); 
             text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
         }
-        .full-work-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        .perfect-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
         }
-        .fw-card {
+        .perfect-card {
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border: 2px solid var(--accent-light); border-radius: 10px;
             padding: 16px; display: flex; align-items: center; gap: 12px;
         }
-        .fw-avatar {
+        .perfect-avatar {
             width: 40px; height: 40px; border-radius: 50%;
             background: var(--accent); color: white; display: flex;
             align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
         }
-        .fw-info { flex: 1; }
-        .fw-name { font-weight: 700; font-size: 14px; }
-        .fw-dept { font-size: 12px; color: var(--text-secondary); }
-        .fw-badge {
+        .perfect-info { flex: 1; }
+        .perfect-name { font-weight: 700; font-size: 14px; }
+        .perfect-dept { font-size: 12px; color: var(--text-secondary); }
+        .perfect-badge {
             background: var(--accent); color: white; padding: 4px 10px;
-            border-radius: 12px; font-size: 11px; font-weight: 700;
+            border-radius: 12px; font-size: 10px; font-weight: 700; text-align: center; line-height: 1.2;
         }
         
         .leaderboard-grid {
@@ -259,6 +259,7 @@
             .filters { flex-direction: column; }
             .filter-group { min-width: 100%; }
             .payroll-banner { flex-direction: column; align-items: flex-start; }
+            .perfect-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -281,7 +282,7 @@
 <div id="dashboard" class="dashboard">
     <header>
         <div>
-            <h1>📊 HR Attendance Dashboard</h1>
+            <h1>📊 Luzie Group Attendance Dashboard</h1>
             <div class="subtitle" id="lastUpdated">Belum dimuat</div>
         </div>
         <div class="actions">
@@ -297,8 +298,8 @@
             <div class="note">Cutoff: tanggal 27 | Periode: 28 - 27 | Minggu = Libur</div>
         </div>
         <div style="text-align: right;">
-            <div style="font-size: 12px; opacity: 0.9;">Karyawan Full Work</div>
-            <div style="font-size: 32px; font-weight: 800;" id="fullWorkCount">-</div>
+            <div style="font-size: 12px; opacity: 0.9;">Karyawan Selalu Hadir Tepat Waktu</div>
+            <div style="font-size: 32px; font-weight: 800;" id="perfectCount">-</div>
         </div>
     </div>
     
@@ -330,9 +331,9 @@
     
     <div class="kpi-grid" id="kpiGrid"></div>
     
-    <div class="full-work-section" id="fullWorkSection" style="display: none;">
-        <h3>🏆 Karyawan Full Work (Tanpa Sakit & Izin)</h3>
-        <div class="full-work-grid" id="fullWorkList"></div>
+    <div class="perfect-section" id="perfectSection" style="display: none;">
+        <h3>🏆 Karyawan Selalu Hadir Tepat Waktu (100% Tepat, Tidak Pernah Terlambat/Sakit/Izin/IT)</h3>
+        <div class="perfect-grid" id="perfectList"></div>
     </div>
     
     <div class="charts-grid">
@@ -396,7 +397,7 @@
                     <th>Izin</th>
                     <th>Cuti</th>
                     <th>WFH</th>
-                    <th>Full Work?</th>
+                    <th>Selalu Hadir Tepat?</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -451,16 +452,9 @@ const app = {
             
             this.rawData = json.data;
             
-            // Generate payroll periods from data
             this.generatePayrollPeriods();
-            
-            // Set default to current payroll period
             this.setDefaultPayrollPeriod();
-            
-            // Populate filters
             this.populateFilters();
-            
-            // Apply filters
             this.applyFilters();
             
             document.getElementById('lastUpdated').textContent = 
@@ -483,8 +477,6 @@ const app = {
         
         this.payrollPeriods = [];
         let current = new Date(minDate);
-        
-        // Set to 28th of current month
         current.setDate(28);
         
         while (current <= maxDate) {
@@ -493,7 +485,6 @@ const app = {
             end.setMonth(end.getMonth() + 1);
             end.setDate(27);
             
-            // Check if we have data in this range
             const hasData = dates.some(d => {
                 const dt = new Date(d);
                 return dt >= start && dt <= end;
@@ -510,7 +501,6 @@ const app = {
             current.setMonth(current.getMonth() + 1);
         }
         
-        // Populate dropdown
         const sel = document.getElementById('payrollSelect');
         sel.innerHTML = '<option value="">Pilih Periode...</option>';
         this.payrollPeriods.forEach((p, i) => {
@@ -526,7 +516,6 @@ const app = {
             return today >= start && today <= end;
         });
         
-        // If today is after the 27th, we're in next period
         if (!currentPeriod && today.getDate() > 27) {
             const nextStart = new Date(today.getFullYear(), today.getMonth(), 28);
             const nextEnd = new Date(today.getFullYear(), today.getMonth() + 1, 27);
@@ -543,7 +532,6 @@ const app = {
     },
     
     populateFilters() {
-        // Departments
         const depts = [...new Set(this.rawData.dailyData.map(d => d.department))].sort();
         const container = document.getElementById('deptTags');
         container.innerHTML = `<div class="dept-tag active" onclick="app.toggleDept('ALL', this)">Semua</div>`;
@@ -579,8 +567,6 @@ const app = {
         const period = this.payrollPeriods[idx];
         document.getElementById('dateStart').value = period.start;
         document.getElementById('dateEnd').value = period.end;
-        
-        // Update banner
         document.getElementById('payrollPeriod').textContent = period.label;
         
         this.applyFilters();
@@ -594,7 +580,6 @@ const app = {
         this.filteredData = this.rawData.dailyData.filter(d => {
             const dateOk = (!start || d.date >= start) && (!end || d.date <= end);
             const deptOk = useAllDepts || this.selectedDepts.has(d.department);
-            // Exclude Sundays (libur) from calculations
             const isWorkDay = d.isWorkDay !== false;
             return dateOk && deptOk && isWorkDay;
         });
@@ -605,7 +590,7 @@ const app = {
     render() {
         this.renderKPIs();
         this.renderAlerts();
-        this.renderFullWork();
+        this.renderPerfectAttendance();
         this.renderCharts();
         this.renderLeaderboards();
         this.renderTable();
@@ -667,37 +652,56 @@ const app = {
         `;
     },
     
-    renderFullWork() {
-        // Full Work = no sakit, no izin during this period
+    renderPerfectAttendance() {
+        // STRICT: 100% tepat, zero terlambat/IT, zero sakit, zero izin
         const empMap = {};
         this.filteredData.forEach(d => {
             if (!empMap[d.employee]) {
-                empMap[d.employee] = { name: d.employee, dept: d.department, sakit: 0, izin: 0 };
+                empMap[d.employee] = { 
+                    name: d.employee, 
+                    dept: d.department, 
+                    tepat: 0, 
+                    terlambat: 0, 
+                    sakit: 0, 
+                    izin: 0,
+                    totalWorkDays: 0 
+                };
             }
+            empMap[d.employee].totalWorkDays++;
+            if (d.status === 'tepat') empMap[d.employee].tepat++;
+            if (d.status === 'terlambat') empMap[d.employee].terlambat++;
             if (d.status === 'sakit') empMap[d.employee].sakit++;
             if (d.status === 'izin') empMap[d.employee].izin++;
         });
         
-        const fullWorkEmps = Object.values(empMap).filter(e => e.sakit === 0 && e.izin === 0);
-        document.getElementById('fullWorkCount').textContent = fullWorkEmps.length;
+        // STRICT CRITERIA: 100% tepat, zero everything else
+        const perfectEmps = Object.values(empMap).filter(e => 
+            e.totalWorkDays > 0 &&           // Must have work days
+            e.tepat === e.totalWorkDays &&    // ALL days must be tepat
+            e.terlambat === 0 &&              // ZERO late
+            e.sakit === 0 &&                  // ZERO sick
+            e.izin === 0                      // ZERO permission
+        );
         
-        const section = document.getElementById('fullWorkSection');
-        const list = document.getElementById('fullWorkList');
+        document.getElementById('perfectCount').textContent = perfectEmps.length;
         
-        if (fullWorkEmps.length === 0) {
+        const section = document.getElementById('perfectSection');
+        const list = document.getElementById('perfectList');
+        
+        if (perfectEmps.length === 0) {
             section.style.display = 'none';
             return;
         }
         
         section.style.display = 'block';
-        list.innerHTML = fullWorkEmps.map(e => `
-            <div class="fw-card">
-                <div class="fw-avatar">${e.name.charAt(0)}</div>
-                <div class="fw-info">
-                    <div class="fw-name">${e.name}</div>
-                    <div class="fw-dept">${e.dept}</div>
+        list.innerHTML = perfectEmps.map(e => `
+            <div class="perfect-card">
+                <div class="perfect-avatar">${e.name.charAt(0)}</div>
+                <div class="perfect-info">
+                    <div class="perfect-name">${e.name}</div>
+                    <div class="perfect-dept">${e.dept}</div>
                 </div>
-                <div class="fw-badge">Full Work</div>
+                <div class="perfect-badge">Selalu Hadir<br>Tepat Waktu</div>
             </div>
         `).join('');
     },
@@ -741,7 +745,6 @@ const app = {
     },
     
     renderCharts() {
-        // Dept comparison
         const deptStats = {};
         this.filteredData.forEach(d => {
             if (!deptStats[d.department]) {
@@ -762,7 +765,6 @@ const app = {
             ]
         }, { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } });
         
-        // Daily trend (excluding Sundays)
         const dateMap = {};
         this.filteredData.forEach(d => {
             if (!dateMap[d.date]) dateMap[d.date] = { hadir: 0, terlambat: 0 };
@@ -779,7 +781,6 @@ const app = {
             ]
         }, { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } });
         
-        // Pie chart
         const counts = {
             tepat: this.filteredData.filter(d => d.status === 'tepat').length,
             terlambat: this.filteredData.filter(d => d.status === 'terlambat').length,
@@ -799,7 +800,6 @@ const app = {
             }]
         }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } });
         
-        // Period stats text
         const totalEmps = new Set(this.filteredData.map(d => d.employee)).size;
         document.getElementById('periodStats').innerHTML = `
             <div style="display: grid; gap: 12px;">
@@ -878,8 +878,9 @@ const app = {
         const empMap = {};
         this.filteredData.forEach(d => {
             if (!empMap[d.employee]) {
-                empMap[d.employee] = { name: d.employee, dept: d.department, counts: {} };
+                empMap[d.employee] = { name: d.employee, dept: d.department, counts: {}, totalDays: 0 };
             }
+            empMap[d.employee].totalDays++;
             empMap[d.employee].counts[d.status] = (empMap[d.employee].counts[d.status] || 0) + 1;
         });
         
@@ -888,8 +889,10 @@ const app = {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = rows.map(r => {
             const c = r.counts;
-            const workDays = (c.tepat || 0) + (c.terlambat || 0) + (c.wfh || 0) + (c.sakit || 0) + (c.izin || 0) + (c.cuti || 0) + (c.absent || 0);
-            const isFullWork = (c.sakit || 0) === 0 && (c.izin || 0) === 0;
+            const workDays = r.totalDays;
+            // STRICT: tepat must equal total work days, and zero terlambat/sakit/izin
+            const isPerfect = (c.tepat || 0) === workDays && workDays > 0 && 
+                             (c.terlambat || 0) === 0 && (c.sakit || 0) === 0 && (c.izin || 0) === 0;
             
             return `
                 <tr>
@@ -902,7 +905,7 @@ const app = {
                     <td><span class="stat-pill pill-izin">${c.izin || 0}</span></td>
                     <td><span class="stat-pill pill-cuti">${c.cuti || 0}</span></td>
                     <td>${c.wfh || 0}</td>
-                    <td>${isFullWork ? '<span style="color: var(--accent); font-weight: 700;">✓ Full Work</span>' : '<span style="color: var(--text-secondary);">-</span>'}</td>
+                    <td>${isPerfect ? '<span style="color: var(--accent); font-weight: 700;">✓ Selalu Hadir Tepat</span>' : '<span style="color: var(--text-secondary);">-</span>'}</td>
                 </tr>
             `;
         }).join('');
